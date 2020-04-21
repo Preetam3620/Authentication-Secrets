@@ -16,6 +16,7 @@ app.use(express.static("public"));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 
+/* express session settings */
 app.use(session({
     secret: "Our secret.",
     resave: false,
@@ -29,6 +30,7 @@ mongoose.connect("mongodb+srv://" + process.env.MONGO_USER + ":" + process.env.M
 // mongoose.connect("mongodb://localhost:27017/userDB", { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.set("useCreateIndex", true);
 
+/* mongoose model */
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
@@ -68,6 +70,7 @@ passport.use(new GoogleStrategy({
     }
 ));
 
+/* get routes */
 app.get("/", function (req, res) {
     res.render("home");
 });
@@ -91,6 +94,11 @@ app.get("/register", function (req, res) {
     res.render("register");
 });
 
+app.get("/logout", function (req, res) {
+    req.logOut();
+    res.redirect("/");
+});
+
 app.get("/secrets", function (req, res) {
     User.find({ "secret": { $ne: null } }, function (err, foundUsers) {
         if (err) {
@@ -111,9 +119,11 @@ app.get("/submit", function (req, res) {
     }
 });
 
+/* post routes */
 app.post("/submit", function (req, res) {
     const submittedSecret = req.body.secret;
 
+    /* update database with secret*/
     User.findById(req.user.id, function (err, foundUser) {
         if (err) {
             console.log(err);
@@ -126,11 +136,6 @@ app.post("/submit", function (req, res) {
             }
         }
     });
-});
-
-app.get("/logout", function (req, res) {
-    req.logOut();
-    res.redirect("/");
 });
 
 app.post("/register", function (req, res) {
